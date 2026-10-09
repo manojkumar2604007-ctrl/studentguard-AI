@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Analytics - StudentGuard AI{% endblock %}
+{% block content %}
+<h1>Model Analytics</h1>
+{% if not m %}<div class="flash error">Model not trained yet. Run <code>python -m ml.train</code>.</div>{% else %}
+<section class="grid4">
+  <div class="card stat"><div class="num">{{ '%.2f'|format(m.test_accuracy*100) }}%</div><div>Test accuracy ({{ m.n_test }} students)</div></div>
+  <div class="card stat"><div class="num">{{ '%.2f'|format(m.train_accuracy*100) }}%</div><div>Train accuracy</div></div>
+  <div class="card stat"><div class="num">{{ '%.2f'|format(m.macro_f1) }}</div><div>Macro F1</div></div>
+  <div class="card stat"><div class="num">{{ m.epochs_run }}</div><div>Epochs run</div></div>
+</section>
+<section class="grid2">
+  <div class="card"><h2>Per-class performance</h2>
+    <div class="tablewrap"><table><tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1</th><th>Support</th></tr>
+    {% for c in m.classes %}{% set k = m.report[c] %}
+    <tr><td>{{ c }}</td><td>{{ '%.2f'|format(k.precision) }}</td><td>{{ '%.2f'|format(k.recall) }}</td><td>{{ '%.2f'|format(k['f1-score']) }}</td><td>{{ k.support|int }}</td></tr>{% endfor %}
+    </table></div></div>
+  <div class="card"><h2>Confusion matrix</h2><p class="muted">rows = actual, columns = predicted</p>
+    <div class="tablewrap"><table><tr><th></th>{% for c in m.classes %}<th>{{ c }}</th>{% endfor %}</tr>
+    {% for row in m.confusion_matrix %}{% set ri = loop.index0 %}<tr><th>{{ m.classes[ri] }}</th>{% for v in row %}<td class="{{ 'diag' if loop.index0 == ri else '' }}">{{ v }}</td>{% endfor %}</tr>{% endfor %}
+    </table></div></div>
+</section>
+<section class="grid2">
+  <div class="card"><h2>Dataset class distribution</h2>
+    {% set tot = m.class_distribution.values()|sum %}
+    {% for c, n in m.class_distribution.items() %}
+    <div class="pbar"><span class="lbl">{{ c }}</span><div class="track"><div class="fill {{ c|lower }}" style="width: {{ n/tot*100 }}%"></div></div><span class="val">{{ n }}</span></div>{% endfor %}
+  </div>
+  <div class="card"><h2>Top features (permutation importance)</h2><p class="muted">Drop in test accuracy when the feature is shuffled.</p>
+    {% set mx = m.feature_importance[0].importance or 1 %}
+    {% for f in m.feature_importance[:8] %}
+    <div class="pbar"><span class="lbl wide">{{ f.feature }}</span><div class="track"><div class="fill enrolled" style="width: {{ (f.importance/mx*100)|round if f.importance > 0 else 0 }}%"></div></div><span class="val">{{ '%.3f'|format(f.importance) }}</span></div>{% endfor %}
+  </div>
+</section>
+<section class="card"><h2>ANN training loss</h2>
+  <svg viewBox="0 0 500 160" class="loss" preserveAspectRatio="none"><polyline fill="none" stroke="#4f46e5" stroke-width="2" points="{{ pts }}"/></svg>
+  <p class="muted">Architecture: input &rarr; {{ m.hidden_layers|join(' &rarr; ')|safe }} &rarr; 3 (softmax). Loss per epoch over {{ m.epochs_run }} epochs.</p>
+</section>
+{% endif %}
+{% endblock %}

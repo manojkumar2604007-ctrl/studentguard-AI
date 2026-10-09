@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - StudentGuard AI{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<section class="grid4">
+  <div class="card stat"><div class="num">{{ stats.total }}</div><div>Total assessments</div></div>
+  <div class="card stat"><div class="num red">{{ stats.risk.get('HIGH',0) }}</div><div>High risk</div></div>
+  <div class="card stat"><div class="num amber">{{ stats.risk.get('MEDIUM',0) }}</div><div>Medium risk</div></div>
+  <div class="card stat"><div class="num green">{{ stats.risk.get('LOW',0) }}</div><div>Low risk</div></div>
+</section>
+<section class="card">
+  <h2>Recent assessments {% if stats.avg_dropout is not none %}<small class="muted">(avg dropout probability {{ stats.avg_dropout }}%)</small>{% endif %}</h2>
+  {% if recent %}
+  <div class="tablewrap"><table>
+    <tr><th>Student</th><th>Time</th><th>Predicted</th><th>Dropout %</th><th>Risk</th><th></th></tr>
+    {% for r in recent %}
+    <tr><td>{{ r.student_id }}</td><td>{{ r.created_at }}</td><td>{{ r.predicted_status }}</td>
+    <td>{{ '%.1f'|format(r.dropout_probability) }}</td><td><span class="badge {{ r.risk_level|lower }}">{{ r.risk_level }}</span></td>
+    <td><a href="{{ url_for('result', pid=r.id) }}">View</a></td></tr>
+    {% endfor %}
+  </table></div>
+  {% else %}<p class="muted">No assessments yet. <a href="{{ url_for('assess') }}">Run one</a>.</p>{% endif %}
+</section>
+{% endblock %}

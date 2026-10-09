@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Student Dropout Prediction using ANN</h1>
+  <p>Enter a student's academic and background details. A trained Artificial Neural Network
+  returns the probability of <b>Dropout</b>, <b>Enrolled</b> and <b>Graduate</b>, plus a risk level and suggested interventions.</p>
+  <a class="btn" href="{{ url_for('assess') }}">Start Assessment</a>
+  <a class="btn ghost" href="{{ url_for('analytics') }}">View Model Analytics</a>
+</section>
+{% if not ready %}<div class="flash error">Model not trained yet. Run <code>python -m ml.train</code>.</div>{% endif %}
+<section class="grid4">
+  <div class="card stat"><div class="num">{{ ('%.2f'|format(m.test_accuracy*100) ~ '%') if m else '-' }}</div><div>Test accuracy</div></div>
+  <div class="card stat"><div class="num">{{ m.n_rows if m else '-' }}</div><div>Students in dataset</div></div>
+  <div class="card stat"><div class="num">{{ m.n_features if m else '-' }}</div><div>Input features</div></div>
+  <div class="card stat"><div class="num">{{ stats.total }}</div><div>Assessments made</div></div>
+</section>
+<section class="card">
+  <h2>How it works</h2>
+  <ol class="flow"><li>Dataset</li><li>Preprocessing</li><li>ANN model</li><li>Evaluation</li><li>Prediction</li><li>Risk level</li></ol>
+</section>
+{% endblock %}

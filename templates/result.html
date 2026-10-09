@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Result - StudentGuard AI{% endblock %}
+{% block content %}
+<h1>Student Dropout Prediction</h1>
+<section class="card result">
+  <div class="res-head">
+    <div>
+      <div class="muted">Student ID</div><div class="big">{{ r.student_id }}{% if r.student_name %} <small>({{ r.student_name }})</small>{% endif %}</div>
+    </div>
+    <div>
+      <div class="muted">Predicted Status</div><div class="big">{{ r.predicted_status }}</div>
+    </div>
+    <div>
+      <div class="muted">Dropout Probability</div><div class="big">{{ '%.1f'|format(r.dropout_probability) }}%</div>
+    </div>
+    <div>
+      <div class="muted">Risk Level</div><span class="badge {{ r.risk_level|lower }}">{{ r.risk_level }}</span>
+    </div>
+  </div>
+  <h2>Class Probabilities</h2>
+  {% for c in classes %}
+  <div class="pbar"><span class="lbl">{{ c }}</span>
+    <div class="track"><div class="fill {{ c|lower }}" style="width: {{ r.probabilities[c] }}%"></div></div>
+    <span class="val">{{ '%.1f'|format(r.probabilities[c]) }}%</span></div>
+  {% endfor %}
+</section>
+<section class="grid2">
+  <div class="card"><h2>Key Observations</h2><ul>{% for o in r.observations %}<li>{{ o }}</li>{% endfor %}</ul></div>
+  <div class="card"><h2>Suggested Intervention</h2><ul>{% for i in r.interventions %}<li>{{ i }}</li>{% endfor %}</ul></div>
+</section>
+<p class="muted">Probabilities are produced by the trained ANN. Risk level: HIGH &ge; 60%, MEDIUM &ge; 30%, otherwise LOW (based on Dropout probability).</p>
+<a class="btn" href="{{ url_for('assess') }}">New Assessment</a>
+<a class="btn ghost" href="{{ url_for('dashboard') }}">Dashboard</a>
+{% endblock %}

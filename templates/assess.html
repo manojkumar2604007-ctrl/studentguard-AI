@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Assessment - StudentGuard AI{% endblock %}
+{% block content %}
+<h1>Student Assessment</h1>
+<div class="card">
+  <b>Try a real student from the dataset (held-out test set):</b>
+  <div class="row">
+    <button type="button" class="btn small" data-label="Dropout">Dropout sample</button>
+    <button type="button" class="btn small" data-label="Enrolled">Enrolled sample</button>
+    <button type="button" class="btn small" data-label="Graduate">Graduate sample</button>
+    <span id="sampleInfo" class="muted"></span>
+  </div>
+</div>
+<form id="f" method="post" action="{{ url_for('predict') }}" class="card">
+  <div class="fields">
+    <label>Student ID (optional)<input name="student_id" placeholder="auto: STU001"></label>
+    <label>Student name (optional)<input name="student_name"></label>
+  </div>
+  <h2>Key details</h2>
+  <div class="fields">
+  {% for col, label, kind, extra in key_fields %}
+    <label>{{ label }}
+    {% if kind == 'select' %}
+      <select name="{{ col }}">
+        {% for v, t in extra.items() %}<option value="{{ v }}" {{ 'selected' if defaults.get(col)|int == v }}>{{ t }}</option>{% endfor %}
+      </select>
+    {% else %}
+      <input type="number" name="{{ col }}" min="{{ extra.min }}" max="{{ extra.max }}" step="{{ extra.step }}" value="{{ defaults.get(col) }}" required>
+    {% endif %}
+    </label>
+  {% endfor %}
+  </div>
+  <details>
+    <summary>Advanced fields (other dataset features, pre-filled with dataset typical values)</summary>
+    <div class="fields">
+      {% for col in adv %}<label>{{ col }}<input type="number" step="any" name="{{ col }}" value="{{ defaults.get(col) }}"></label>{% endfor %}
+    </div>
+  </details>
+  <button class="btn" type="submit">Predict Dropout Risk</button>
+</form>
+<script src="{{ url_for('static', filename='js/assess.js') }}"></script>
+{% endblock %}
